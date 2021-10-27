@@ -48,7 +48,34 @@ namespace DataProcessing.Signals
 
             return signal;
         }
-        public static MarketSignal GetMarketSignalFromThreeCandles(Candlestick oldest, Candlestick previous, Candlestick current) { }
+        public static MarketSignal GetMarketSignalFromThreeCandles(Candlestick oldest, Candlestick previous, Candlestick current, MarketSignal priorTrend, out string patternName) 
+        {
+            MarketSignal signal = priorTrend;
+            bool isReversing = false;
+            patternName = "No Pattern";
+
+            if (priorTrend <= MarketSignal.BearishContinuation)
+            {
+                isReversing = IsMorningstar(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsBullishAbandonedBaby(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsThreeWhiteSoldiers(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsMorningDojiStar(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsThreeOutsideUp(oldest, previous, current, out patternName);
+                signal = isReversing ? MarketSignal.BullishReversal : priorTrend;
+            }
+            if (!isReversing && priorTrend >= MarketSignal.BullishContinuation)
+            {
+                isReversing = IsEveningStar(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsBearishAbandonedBaby(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsThreeBlackCrows(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsEveningDojiStar(oldest, previous, current, out patternName);
+                isReversing = isReversing ? isReversing : IsThreeOutsideDown(oldest, previous, current, out patternName);
+                signal = isReversing ? MarketSignal.BearishReversal : priorTrend;
+            }
+
+            patternName = signal == priorTrend ? "No Pattern" : patternName;
+            return signal;
+        }
 
         
         //Bullish Two-Candle Patterns
@@ -216,7 +243,7 @@ namespace DataProcessing.Signals
                     //Current closed higher than oldest
                     current.Close > previous.Close;
         }
-        private static bool IsBullishMorningDojiStar(Candlestick oldest, Candlestick previous, Candlestick current, out string patternName)
+        private static bool IsMorningDojiStar(Candlestick oldest, Candlestick previous, Candlestick current, out string patternName)
         {
             patternName = "Bullish Morning Doji Star";
             var halfwayLoss = oldest.Open - (oldest.Open - oldest.Close / 2);
@@ -314,7 +341,7 @@ namespace DataProcessing.Signals
                     //Current closed higher than oldest
                     current.Close < previous.Close;
         }
-        private static bool IsBearishEveningDojiStar(Candlestick oldest, Candlestick previous, Candlestick current, out string patternName)
+        private static bool IsEveningDojiStar(Candlestick oldest, Candlestick previous, Candlestick current, out string patternName)
         {
             patternName = "Bearish Evening Doji Star";
             var halfwayGain = oldest.Close - (oldest.Close - oldest.Open / 2);
@@ -329,6 +356,20 @@ namespace DataProcessing.Signals
                     //Third candle rules: is bear and closing price below midpoint of first body
                     current.Close < current.Open &&
                     current.Close <= halfwayGain;
+
+        }
+        private static bool IsThreeOutsideDown(Candlestick oldest, Candlestick previous, Candlestick current, out string patternName)
+        {
+            patternName = "Three Outside Down";
+
+            //First Candle rules: is bull
+            return oldest.Close > oldest.Open &&
+                    //Second Candle rules: engulfs first candle, is bear
+                    previous.Close < previous.Open &&
+                    previous.Open > oldest.Close && previous.Close < oldest.Open &&
+                    //Third Candle rules: is bear, candle closes lower than last
+                    current.Close < previous.Close &&
+                    current.Close < current.Open;
 
         }
 

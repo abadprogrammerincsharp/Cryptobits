@@ -48,7 +48,7 @@ namespace DataProcessing.Signals
                 bool isSequential = true;
                 for (int i = 0; i < trendCount - 1 && isSequential; i++)
                     isSequential = latestRsiValues[i] > latestRsiValues[i + 1];
-                signal = (isSequential) ? MarketSignal.StrongBull : signal;
+                signal = (isSequential) ? MarketSignal.StrongBullContinuation : signal;
             }
 
             if (signal == MarketSignal.Neutral) //Checking decline for bear market
@@ -56,7 +56,7 @@ namespace DataProcessing.Signals
                 bool isSequential = true;
                 for (int i = 0; i < trendCount - 1 && isSequential; i++)
                     isSequential = latestRsiValues[i] < latestRsiValues[i + 1];
-                signal = (isSequential) ? MarketSignal.StrongBear : signal;
+                signal = (isSequential) ? MarketSignal.StrongBearContinuation : signal;
             }
 
             return signal;

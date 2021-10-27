@@ -15,14 +15,14 @@ namespace DataProcessing.Signals
             MarketSignal signal = MarketSignal.Neutral;
             if ((signalLine > macdLine) && ((signalLine / macdLine) - 1 > neutralPercent)) //Bull Market
             {
-                if ((signalLine / macdLine) - 1 > fluxPercent) signal = MarketSignal.StrongBull;
+                if ((signalLine / macdLine) - 1 > fluxPercent) signal = MarketSignal.StrongBullContinuation;
                 else if (prevSignalLine < prevMacdLine) signal = MarketSignal.BullishReversal;
                 else signal = MarketSignal.BullishContinuation;
             }
 
             else if ((macdLine > signalLine) && ((macdLine / signalLine) - 1 > neutralPercent)) //Bear Market
             {
-                if ((macdLine / signalLine) - 1 > fluxPercent) signal = MarketSignal.StrongBear;
+                if ((macdLine / signalLine) - 1 > fluxPercent) signal = MarketSignal.StrongBearContinuation;
                 else if (prevMacdLine < prevSignalLine) signal = MarketSignal.BearishReversal;
                 else signal = MarketSignal.BearishContinuation;
             }

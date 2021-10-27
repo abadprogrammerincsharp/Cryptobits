@@ -22,13 +22,13 @@ namespace DataProcessing.Signals
                              (marketSignal <  MarketSignal.BullishContinuation && currentValue > highBand) ||           //2) We're not in a bull run and the value is greater than the high band (overbought)
                              (marketSignal <= MarketSignal.BearishReversal && currentValue > midBand); //3) We're coming out of a bull market and the value is over the expected value
 
-            if (marketSignal == MarketSignal.StrongBear)
+            if (marketSignal == MarketSignal.StrongBearContinuation)
                 signal = OrderSignal.StrongSell;
             else if (timetoSell)
                 signal = OrderSignal.Sell;
             else if (timetoBuy)
                 signal = OrderSignal.Buy;
-            else if (marketSignal == MarketSignal.StrongBull)
+            else if (marketSignal == MarketSignal.StrongBullContinuation)
                 signal = OrderSignal.StrongBuy;
 
             return signal;

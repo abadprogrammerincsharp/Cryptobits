@@ -8,12 +8,12 @@ namespace Contracts.Enums
 {
     public enum MarketSignal
     {
-        StrongBear,
+        StrongBearContinuation,
         BearishContinuation,
         BearishReversal,
         Neutral,
         BullishReversal,
         BullishContinuation,
-        StrongBull
+        StrongBullContinuation
     }
 }

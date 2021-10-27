@@ -15,14 +15,14 @@ namespace DataProcessing.Signals
 
             if (emaFourteen > emaTwentyEight) //Bullish Market
             {
-                if (emaSeven > emaFourteen && lastValue > emaSeven) signal = MarketSignal.StrongBull;
+                if (emaSeven > emaFourteen && lastValue > emaSeven) signal = MarketSignal.StrongBullContinuation;
                 else if (emaSeven < emaFourteen) signal = MarketSignal.BearishReversal;
                 else signal = MarketSignal.BullishContinuation;
             }
 
             else if (emaFourteen < emaTwentyEight) //Bearish Market
             {
-                if (emaSeven < emaFourteen && lastValue < emaSeven) signal = MarketSignal.StrongBear;
+                if (emaSeven < emaFourteen && lastValue < emaSeven) signal = MarketSignal.StrongBearContinuation;
                 else if (emaSeven > emaFourteen) signal = MarketSignal.BullishReversal;
                 else signal = MarketSignal.BearishContinuation;
             }
