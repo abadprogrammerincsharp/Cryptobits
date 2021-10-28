@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Contracts.Concrete;
+using Contracts.Enums;
 
 namespace DataProcessing.Strategies
 {
@@ -15,7 +17,7 @@ namespace DataProcessing.Strategies
 
         //[0]-[3] : Get a trend signal - if no trend, check EMA
         //[1]-[4] : Get a trend signal - if no trend, check EMA
-        
+
         //Check three candle patterns using [0][3] trend
         //If a pattern is found, store pattern in reversal queue
 
@@ -25,5 +27,8 @@ namespace DataProcessing.Strategies
         //If there's a pattern in the reversal queue, check indicators for 
         //a reversal. If a reversal is confirmed, send order.
         //If reversal is confirmed, clear reversal queue
+
+
+        private MarketSignal GetMarketSignalFromCandles(Candlestick oldest, Candlestick middle, Candlestick newest)
     }
 }

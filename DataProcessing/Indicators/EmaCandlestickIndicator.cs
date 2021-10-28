@@ -10,13 +10,13 @@ namespace DataProcessing.Indicators
     public class EmaCandlestickIndicator : GenericCandlestickIndicator
     {
         private IndicatorResult _valueSet, _previousSet;
-        private readonly int _emaPeriod = 0;
+        private readonly int _emaPeriod;
         private readonly string _valueSetKey;
 
-        public EmaCandlestickIndicator(int period, string valueSetKey) : base(true, period + 1)
+        public EmaCandlestickIndicator(int period, string descriptor = "") : base(true, period + 1)
         {
             _emaPeriod = period;
-            _valueSetKey = valueSetKey;
+            _valueSetKey = $"{descriptor}{period}EMA";
             _dataInitialize = InitializeEmaData;
         }
         protected override void CalculateIndicator()

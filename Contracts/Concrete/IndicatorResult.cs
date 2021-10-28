@@ -16,5 +16,15 @@ namespace Contracts.Concrete
             ResultSet = new Dictionary<string, decimal>();
         }
 
+        public List<string> GetCsvHeaders()
+        {
+            return ResultSet.Keys.ToList();
+        }
+
+        public string GetCsvData(string header)
+        {
+            return $"{ResultSet[header]}";
+        }
+
     }
 }

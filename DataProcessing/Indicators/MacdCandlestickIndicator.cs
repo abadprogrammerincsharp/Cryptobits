@@ -16,14 +16,13 @@ namespace DataProcessing.Indicators
         IndicatorResult _macdValues, _previousMacdValues;
         CircularBuffer<decimal> _macdBufferValues;
 
-        public MacdCandlestickIndicator(int fastLength, int slowLength, int signalLength, 
-                                        string signalKey, string macdKey) : base(true, slowLength + 1)
+        public MacdCandlestickIndicator(int fastLength, int slowLength, int signalLength, string descriptor ="") : base(true, slowLength + 1)
         {
             _fastLength = fastLength;
             _slowLength = slowLength;
             _signalLength = signalLength;
-            _signalKey = signalKey ?? throw new ArgumentNullException(nameof(signalKey));
-            _macdKey = macdKey ?? throw new ArgumentNullException(nameof(macdKey));
+            _signalKey = $"{descriptor}{signalLength}Signal";
+            _macdKey = $"{descriptor}{fastLength}/{slowLength}MACD";
 
             _dataInitialize = GetInitialMacdValueSet;
         }

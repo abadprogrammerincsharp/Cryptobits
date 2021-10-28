@@ -70,6 +70,33 @@ namespace DataProcessing.Indicators
                 StopDataFeed();
             await StartDataFeedAsync();
         }
+        public override string ToString()
+        {
+            if (Results.TryPeekFirst(out var firstResult))
+            {
+                var headers = firstResult.GetCsvHeaders();
+                StringBuilder builder = new StringBuilder();
+                foreach (var result in Results.ToList())
+                {
+                    builder.Append($"{result.GetCsvData(headers[0])}");
+                    for (int i = 1; i < headers.Count; i++)
+                        builder.Append($",{result.GetCsvData(headers[i])}");
+                    builder.AppendLine();
+                }
+                return builder.ToString();
+            }
+            else
+                return string.Empty;
+        }
+        public string PrintCsvHeaders()
+        {
+            if (Results.TryPeekFirst(out var result))
+            {
+                return string.Join(",", result.GetCsvHeaders());
+            }
+            else
+                return string.Empty;
+        }
 
         protected abstract void CalculateIndicator();
 

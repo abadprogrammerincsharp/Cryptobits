@@ -15,13 +15,13 @@ namespace DataProcessing.Indicators
         private string _rsiKey;
         CircularBuffer<decimal> _ups, _downs;
 
-        public RsiCandlestickIndicator(int period, string rsiKey) : base(true, period + 1)
+        public RsiCandlestickIndicator(int period, string descriptor = "") : base(true, period + 1)
         {
             _rsiPeriod = period;
             _ups = new CircularBuffer<decimal>();
             _downs = new CircularBuffer<decimal>();
             _dataInitialize = GetInitialRsiValueSet;
-            _rsiKey = rsiKey;
+            _rsiKey = $"{descriptor}{period}RSI";
         }
 
         protected override void CalculateIndicator()

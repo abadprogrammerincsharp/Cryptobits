@@ -16,13 +16,13 @@ namespace DataProcessing.Indicators
         private decimal _factor; 
         private int _period;
 
-        public BollingerBandsCandlestickIndicator(string highBandKey, string lowBandKey, string middleKey, string highLowDifferenceKey, decimal factor, int period):
+        public BollingerBandsCandlestickIndicator(decimal factor, int period, string descriptor =""):
             base(true, period + 1)
         {
-            _highBandKey = highBandKey ?? throw new ArgumentNullException(nameof(highBandKey));
-            _lowBandKey = lowBandKey ?? throw new ArgumentNullException(nameof(lowBandKey));
-            _middleKey = middleKey ?? throw new ArgumentNullException(nameof(middleKey));
-            _highLowDifferenceKey = highLowDifferenceKey ?? throw new ArgumentNullException(nameof(highLowDifferenceKey));
+            _highBandKey = $"{descriptor}{period}HighBand";
+            _lowBandKey = $"{descriptor}{period}LowBand";
+            _middleKey = $"{descriptor}{period}MidBand";
+            _highLowDifferenceKey = $"{descriptor}{period}HiLowDiff";
             _factor = factor;
             _period = period;
             _dataInitialize = InitializeBollingerBands;
