@@ -16,7 +16,7 @@ namespace DataProcessing.Indicators
         IndicatorResult _macdValues, _previousMacdValues;
         CircularBuffer<decimal> _macdBufferValues;
 
-        public MacdCandlestickIndicator(int fastLength, int slowLength, int signalLength, string descriptor ="") : base(true, slowLength + 1)
+        public MacdCandlestickIndicator(TradingPair tradingPair, int fastLength, int slowLength, int signalLength, string descriptor ="") : base(tradingPair, true, slowLength + 1)
         {
             _fastLength = fastLength;
             _slowLength = slowLength;

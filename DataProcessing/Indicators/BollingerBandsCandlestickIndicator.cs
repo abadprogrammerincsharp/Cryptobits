@@ -16,8 +16,8 @@ namespace DataProcessing.Indicators
         private decimal _factor; 
         private int _period;
 
-        public BollingerBandsCandlestickIndicator(decimal factor, int period, string descriptor =""):
-            base(true, period + 1)
+        public BollingerBandsCandlestickIndicator(TradingPair tradingPair, decimal factor, int period, string descriptor =""):
+            base(tradingPair, true, period + 1)
         {
             _highBandKey = $"{descriptor}{period}HighBand";
             _lowBandKey = $"{descriptor}{period}LowBand";

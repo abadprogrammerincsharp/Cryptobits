@@ -13,9 +13,9 @@ namespace DataProcessing.Indicators
         const string START = "S", END = "E", OPEN = "O", CLOSE = "C", HIGH = "H", LOW = "L",
                      VOLUME = "V", DELTA = "D", PERECENT = "P";
 
-        public RawDataIndicator(string timespanAsString) : base(false, 0)
+        public RawDataIndicator(TradingPair tradingPair) : base(tradingPair, false, 0)
         {
-            _prefix = timespanAsString;
+            _prefix = $"{tradingPair.BaseAssetSymbol}{tradingPair.QuoteAssetSymbol}.{tradingPair.Exchange}.{tradingPair.CandlestickInterval.TotalMinutes}";
         }
 
         protected override void CalculateIndicator()

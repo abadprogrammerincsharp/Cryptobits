@@ -8,6 +8,7 @@ namespace Contracts.Concrete
 {
     public class Candlestick
     {
+        public TradingPair TradingPair { get; set; }
         public string Symbol { get; set; }
         public DateTimeOffset Start { get; set; }
         public DateTimeOffset End { get; set; }

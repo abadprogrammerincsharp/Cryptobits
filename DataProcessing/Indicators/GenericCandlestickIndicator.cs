@@ -24,8 +24,9 @@ namespace DataProcessing.Indicators
         protected Action _dataInitialize;
 
         private const int DEFAULT_QUEUE_SIZE = 5000;
+        private TradingPair _tradingPair;
 
-        protected GenericCandlestickIndicator(bool feedRequiresInitialLoad, int dataLoadQuantity)
+        protected GenericCandlestickIndicator(TradingPair tradingPair, bool feedRequiresInitialLoad, int dataLoadQuantity)
         {
             _feedRequiresInitialDataLoad = feedRequiresInitialLoad;
             _dataLoadQuantity = dataLoadQuantity;
@@ -33,10 +34,14 @@ namespace DataProcessing.Indicators
 
             Results = new CircularBuffer<IndicatorResult>(queueSize);
             _candlesticks = new CircularBuffer<Candlestick>(queueSize);
+            _tradingPair = tradingPair;
         }
 
         public virtual async Task StartDataFeedAsync()
         {
+            if (_dataFeedIsLive)
+                return;
+
             if (DataFeed is null)
                 throw new ArgumentNullException(nameof(DataFeed));
 
@@ -45,24 +50,35 @@ namespace DataProcessing.Indicators
                 if (DataLoad is null)
                     throw new ArgumentNullException(nameof(DataLoad));
 
-                var candles = await DataLoad.GetLatestCandlesAsync(_dataLoadQuantity, DataFeed.Interval);
+                var candles = await DataLoad.GetLatestCandlesAsync(_dataLoadQuantity, _tradingPair.CandlestickInterval);
                 _candlesticks.Clear();
                 _candlesticks.AddRange(candles);
                 _dataInitialize?.Invoke();
             }
 
-            DataFeed.ReceivedData += OnReceivedData;
+            DataFeed.RecievedCandlestickData += OnReceivedData;
             DataFeed.FeedAvailabilityChanged += OnDataFeedAvailabilityChanged;
-            OnAvailabilityChanged(this, true);
-            _dataFeedIsLive = true;
+            if (await DataFeed.TryStartStream())
+            {
+                OnAvailabilityChanged(this, true);
+                _dataFeedIsLive = true;
+            }
+            else
+            {
+                OnAvailabilityChanged(this, false);
+                DataFeed.RecievedCandlestickData -= OnReceivedData;
+                DataFeed.FeedAvailabilityChanged -= OnDataFeedAvailabilityChanged;
+            }
         }
         public virtual void StopDataFeed()
         {
             if (DataFeed is null)
                 return;
 
-            DataFeed.ReceivedData -= OnReceivedData;
             OnAvailabilityChanged(this, false);
+            _dataFeedIsLive = false;
+            DataFeed.RecievedCandlestickData -= OnReceivedData;
+            DataFeed.FeedAvailabilityChanged -= OnDataFeedAvailabilityChanged;
         }
         public virtual async Task ResetFeedAsync()
         {
@@ -100,15 +116,18 @@ namespace DataProcessing.Indicators
 
         protected abstract void CalculateIndicator();
 
-        protected virtual void OnDataFeedAvailabilityChanged(object sender, bool e)
+        protected virtual void OnDataFeedAvailabilityChanged(object sender, FeedAvailibilityEvent e)
         {
-            if (!e && _dataFeedIsLive)
+            if (!e.IsAvailable && _dataFeedIsLive)
                 StopDataFeed();
         }
         protected virtual void OnReceivedData(object sender, Candlestick e)
         {
-            _candlesticks.Add(e);
-            CalculateIndicator();
+            if (e.TradingPair == _tradingPair)
+            {
+                _candlesticks.Add(e);
+                CalculateIndicator();
+            }
         }
         protected virtual void OnAvailabilityChanged(object sender, bool state)
         {

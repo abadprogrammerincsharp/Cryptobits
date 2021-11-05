@@ -13,7 +13,7 @@ namespace DataProcessing.Indicators
         private readonly int _emaPeriod;
         private readonly string _valueSetKey;
 
-        public EmaCandlestickIndicator(int period, string descriptor = "") : base(true, period + 1)
+        public EmaCandlestickIndicator(TradingPair tradingPair, int period, string descriptor = "") : base(tradingPair, true, period + 1)
         {
             _emaPeriod = period;
             _valueSetKey = $"{descriptor}{period}EMA";
