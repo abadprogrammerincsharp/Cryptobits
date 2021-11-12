@@ -50,14 +50,14 @@ namespace DataProcessing.Indicators
                 if (DataLoad is null)
                     throw new ArgumentNullException(nameof(DataLoad));
 
-                var candles = await DataLoad.GetLatestCandlesAsync(_dataLoadQuantity, _tradingPair.CandlestickInterval);
+                var candles = await DataLoad.GetLatestCandlesAsync(_tradingPair, _dataLoadQuantity);
                 _candlesticks.Clear();
                 _candlesticks.AddRange(candles);
                 _dataInitialize?.Invoke();
             }
 
-            DataFeed.RecievedCandlestickData += OnReceivedData;
-            DataFeed.FeedAvailabilityChanged += OnDataFeedAvailabilityChanged;
+            DataFeed.ReceivedCandlestickData += OnReceivedData;
+            DataFeed.CandleFeedAvailabilityChanged += OnDataFeedAvailabilityChanged;
             if (await DataFeed.TryStartStream())
             {
                 OnAvailabilityChanged(this, true);
@@ -66,8 +66,8 @@ namespace DataProcessing.Indicators
             else
             {
                 OnAvailabilityChanged(this, false);
-                DataFeed.RecievedCandlestickData -= OnReceivedData;
-                DataFeed.FeedAvailabilityChanged -= OnDataFeedAvailabilityChanged;
+                DataFeed.ReceivedCandlestickData -= OnReceivedData;
+                DataFeed.CandleFeedAvailabilityChanged -= OnDataFeedAvailabilityChanged;
             }
         }
         public virtual void StopDataFeed()
@@ -77,8 +77,8 @@ namespace DataProcessing.Indicators
 
             OnAvailabilityChanged(this, false);
             _dataFeedIsLive = false;
-            DataFeed.RecievedCandlestickData -= OnReceivedData;
-            DataFeed.FeedAvailabilityChanged -= OnDataFeedAvailabilityChanged;
+            DataFeed.ReceivedCandlestickData -= OnReceivedData;
+            DataFeed.CandleFeedAvailabilityChanged -= OnDataFeedAvailabilityChanged;
         }
         public virtual async Task ResetFeedAsync()
         {
@@ -116,7 +116,7 @@ namespace DataProcessing.Indicators
 
         protected abstract void CalculateIndicator();
 
-        protected virtual void OnDataFeedAvailabilityChanged(object sender, FeedAvailibilityEvent e)
+        protected virtual void OnDataFeedAvailabilityChanged(object sender, CandleFeedAvailabilityEvent e)
         {
             if (!e.IsAvailable && _dataFeedIsLive)
                 StopDataFeed();

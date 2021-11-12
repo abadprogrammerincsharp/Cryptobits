@@ -9,6 +9,6 @@ namespace Contracts.Interfaces
 {
     public interface ICandleLoad
     {
-        public Task<IEnumerable<Candlestick>> GetLatestCandlesAsync(int quantity, TimeSpan interval);
+        public Task<IEnumerable<Candlestick>> GetLatestCandlesAsync(TradingPair tradingPair, int quantity);
     }
 }

@@ -8,6 +8,7 @@ namespace Contracts.Interfaces
 {
     public interface IWebsocketStreamReader
     {
+        public ILogger Log { get; set; }
         public Task<bool> TryStartStream();
         public void StopStream();
     }

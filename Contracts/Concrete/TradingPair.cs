@@ -15,8 +15,8 @@ namespace Contracts.Concrete
 
         public static bool operator == (TradingPair lhs, TradingPair rhs)
         {
-            if (lhs == null)
-                return (rhs == null);
+            if (lhs is null)
+                return (rhs is null);
             return lhs.Equals(rhs);
         }
         public static bool operator !=(TradingPair lhs, TradingPair rhs) => !(lhs == rhs);

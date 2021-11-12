@@ -9,10 +9,8 @@ namespace Contracts.Interfaces
 {
     public interface ICandleFeed : IWebsocketStreamReader, IDisposable
     {
-        TimeSpan Interval { get; set; }
-        public event EventHandler<FeedAvailibilityEvent> FeedAvailabilityChanged;
-        public event EventHandler<Candlestick> RecievedCandlestickData;
-        public ILogger Log { get; set; }
+        public event EventHandler<Candlestick> ReceivedCandlestickData;
+        public event EventHandler<CandleFeedAvailabilityEvent> CandleFeedAvailabilityChanged;
 
         public bool TrySubscribeToCandleFeed(TradingPair tradingPair);
         public void UnsubscribeFromCandleFeed(TradingPair tradingPair);

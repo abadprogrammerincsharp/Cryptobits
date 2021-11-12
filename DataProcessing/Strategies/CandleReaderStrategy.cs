@@ -30,5 +30,8 @@ namespace DataProcessing.Strategies
 
 
         private MarketSignal GetMarketSignalFromCandles(Candlestick oldest, Candlestick middle, Candlestick newest)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

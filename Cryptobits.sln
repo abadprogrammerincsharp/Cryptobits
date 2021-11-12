@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptobitsTests", "Cryptobi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataProcessing", "DataProcessing\DataProcessing.csproj", "{51E296CE-9407-4161-9D43-A9BE4876A932}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataInteraction", "DataInteraction\DataInteraction.csproj", "{DF75EFDC-940F-4267-B628-7EE58E6CC5FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataInteraction", "DataInteraction\DataInteraction.csproj", "{DF75EFDC-940F-4267-B628-7EE58E6CC5FC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging", "Logging\Logging.csproj", "{12A264D5-E145-4692-91C2-8DF22DD2DCFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApps", "Console\ConsoleApps.csproj", "{15EAA136-B74A-4225-8E1E-B93ADF625044}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{DF75EFDC-940F-4267-B628-7EE58E6CC5FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF75EFDC-940F-4267-B628-7EE58E6CC5FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF75EFDC-940F-4267-B628-7EE58E6CC5FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12A264D5-E145-4692-91C2-8DF22DD2DCFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12A264D5-E145-4692-91C2-8DF22DD2DCFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12A264D5-E145-4692-91C2-8DF22DD2DCFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12A264D5-E145-4692-91C2-8DF22DD2DCFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15EAA136-B74A-4225-8E1E-B93ADF625044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15EAA136-B74A-4225-8E1E-B93ADF625044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15EAA136-B74A-4225-8E1E-B93ADF625044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15EAA136-B74A-4225-8E1E-B93ADF625044}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

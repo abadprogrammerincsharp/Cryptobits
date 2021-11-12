@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Concrete
 {
-    public class FeedAvailibilityEvent : EventArgs
+    public class CandleFeedAvailabilityEvent : EventArgs
     {
         public TradingPair TradingPair { get; set; }
         public bool IsAvailable { get; set; }
