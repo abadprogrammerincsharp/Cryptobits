@@ -50,7 +50,8 @@ namespace DataProcessing.Indicators
                 if (DataLoad is null)
                     throw new ArgumentNullException(nameof(DataLoad));
 
-                var candles = await DataLoad.GetLatestCandlesAsync(_tradingPair, _dataLoadQuantity);
+                var quantity = Math.Max(_dataLoadQuantity, DataLoad.MinCandleQuantity);
+                var candles = await DataLoad.GetLatestCandlesAsync(_tradingPair, quantity);
                 _candlesticks.Clear();
                 _candlesticks.AddRange(candles);
                 _dataInitialize?.Invoke();
@@ -58,8 +59,8 @@ namespace DataProcessing.Indicators
 
             DataFeed.ReceivedCandlestickData += OnReceivedData;
             DataFeed.CandleFeedAvailabilityChanged += OnDataFeedAvailabilityChanged;
-            if (await DataFeed.TryStartStream())
-            {
+            if (await DataFeed.TryStartStream() && DataFeed.TrySubscribeToCandleFeed(_tradingPair))
+            {                
                 OnAvailabilityChanged(this, true);
                 _dataFeedIsLive = true;
             }
@@ -87,6 +88,21 @@ namespace DataProcessing.Indicators
             await StartDataFeedAsync();
         }
         public override string ToString()
+        {
+            if (Results.TryPeekLast(out var latestResult))
+            {
+                var headers = latestResult.GetCsvHeaders();
+                StringBuilder builder = new StringBuilder();                
+                builder.Append($"{latestResult.GetCsvData(headers[0])}");
+                for (int i = 1; i < headers.Count; i++)
+                    builder.Append($",{latestResult.GetCsvData(headers[i])}");
+                builder.AppendLine();
+                return builder.ToString();
+            }
+            else
+                return string.Empty;
+        }
+        public string AllToString()
         {
             if (Results.TryPeekFirst(out var firstResult))
             {

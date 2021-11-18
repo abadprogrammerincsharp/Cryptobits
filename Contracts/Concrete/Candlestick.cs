@@ -3,11 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Contracts.Extensions;
 
 namespace Contracts.Concrete
 {
     public class Candlestick
     {
+        public Candlestick() { }
+        public Candlestick(TradingPair tradingPair, object start, object open, object high, object low, object close, object tradeVolume, object end)
+        {
+            TradingPair = tradingPair;
+            Symbol = tradingPair.GetUppercaseSymbolPair();
+            Start = DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(start));
+            Open = Convert.ToDecimal(open);
+            High = Convert.ToDecimal(high);
+            Low = Convert.ToDecimal(low);
+            Close = Convert.ToDecimal(close);
+            TradeVolume = Convert.ToDecimal(tradeVolume);
+            End = DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(end));
+        }
+
         public TradingPair TradingPair { get; set; }
         public string Symbol { get; set; }
         public DateTimeOffset Start { get; set; }
@@ -19,6 +34,7 @@ namespace Contracts.Concrete
         public decimal Change { get => Close - Open; }
         public decimal ChangePercent { get => Change / Open; }
         public decimal TradeVolume { get; set; }
+        public bool IsOpen { get; set; }
 
         public override string ToString()
         {

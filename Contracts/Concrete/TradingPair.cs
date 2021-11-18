@@ -8,10 +8,11 @@ namespace Contracts.Concrete
 {
     public class TradingPair
     {
-        public string BaseAssetSymbol { get; set; }
-        public string QuoteAssetSymbol { get; set; }
+        public string QuoteAsset { get; set; }
+        public string BaseAsset { get; set; }
         public TimeSpan CandlestickInterval { get; set; }
         public string Exchange { get; set; }
+        public decimal MaxOrderSize { get; set; }
 
         public static bool operator == (TradingPair lhs, TradingPair rhs)
         {
@@ -25,14 +26,14 @@ namespace Contracts.Concrete
         {      
             return obj != null &&
                    obj is TradingPair pair &&
-                   BaseAssetSymbol == pair.BaseAssetSymbol &&
-                   QuoteAssetSymbol == pair.QuoteAssetSymbol &&
+                   QuoteAsset == pair.QuoteAsset &&
+                   BaseAsset == pair.BaseAsset &&
                    CandlestickInterval.Equals(pair.CandlestickInterval) &&
                    Exchange == pair.Exchange;
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(BaseAssetSymbol, QuoteAssetSymbol, CandlestickInterval, Exchange);
+            return HashCode.Combine(QuoteAsset, BaseAsset, CandlestickInterval, Exchange);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace DataProcessing.Indicators
         private string _rsiKey;
         CircularBuffer<decimal> _ups, _downs;
 
-        public RsiCandlestickIndicator(int period, string descriptor = "") : base(true, period + 1)
+        public RsiCandlestickIndicator(TradingPair pair, int period, string descriptor = "") : base(pair, true, period + 1)
         {
             _rsiPeriod = period;
             _ups = new CircularBuffer<decimal>();

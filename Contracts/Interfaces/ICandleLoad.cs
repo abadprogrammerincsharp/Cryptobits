@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace Contracts.Interfaces
 {
-    public interface ICandleLoad
+    public interface ICandleLoad : IExchangeApi
     {
         public Task<IEnumerable<Candlestick>> GetLatestCandlesAsync(TradingPair tradingPair, int quantity);
+        public bool CanQueryCandlestickData();
+        public int MinCandleQuantity { get; }
+        public int MaxCandleQuantity { get; }
     }
 }

@@ -14,9 +14,9 @@ namespace DataProcessing.Indicators
         decimal _fast, _slow;
         string  _signalKey, _macdKey;
         IndicatorResult _macdValues, _previousMacdValues;
-        CircularBuffer<decimal> _macdBufferValues;
+        CircularBuffer<decimal> _macdBufferValues = new CircularBuffer<decimal>();
 
-        public MacdCandlestickIndicator(TradingPair tradingPair, int fastLength, int slowLength, int signalLength, string descriptor ="") : base(tradingPair, true, slowLength + 1)
+        public MacdCandlestickIndicator(TradingPair tradingPair, int fastLength, int slowLength, int signalLength, string descriptor ="") : base(tradingPair, true, slowLength + signalLength)
         {
             _fastLength = fastLength;
             _slowLength = slowLength;
@@ -29,7 +29,7 @@ namespace DataProcessing.Indicators
 
         protected override void CalculateIndicator()
         {
-            if (!_candlesticks.TryPeekLast(out var candle))
+            if (!_candlesticks.TryPeekLast(out var candle) || !(candle?.IsOpen ?? true))
                 return;
             GetNextMacdValueSet(candle.Close);
             Results.Add(_macdValues);
@@ -53,21 +53,21 @@ namespace DataProcessing.Indicators
             /*************
              * Seed using SMA
              *************/
-            //decimal fastLengthSma = CalculateSmaValue(values.GetRange(0, _fastLength));
-            //decimal fastLengthEma = fastLengthSma;
-            //for (int i = _fastLength; i < _slowLength; i++)
-            //    fastLengthEma = CalculateEmaValue(values[i], _fastLength, fastLengthEma);
-            //decimal slowLengthSma = CalculateSmaValue(values.GetRange(0, _slowLength));
+            decimal fastLengthSma = CalculateSmaValue(values.GetRange(0, _fastLength));
+            decimal fastLengthEma = fastLengthSma;
+            for (int i = _fastLength; i < _slowLength; i++)
+                fastLengthEma = CalculateEmaValue(values[i], _fastLength, fastLengthEma);
+            decimal slowLengthSma = CalculateSmaValue(values.GetRange(0, _slowLength));
             /****************/
 
             /************* 
              * Seed using First Value
              *************/
-            decimal fastLengthEma = values[0];
-            for (int i = 1; i < _slowLength; i++)
-                fastLengthEma = CalculateEmaValue(values[i], _fastLength, fastLengthEma);
-            _fast = fastLengthEma;
-            decimal slowLengthSma = values[0];
+            //decimal fastLengthEma = values[0];
+            //for (int i = 1; i < _slowLength; i++)
+            //    fastLengthEma = CalculateEmaValue(values[i], _fastLength, fastLengthEma);
+            //_fast = fastLengthEma;
+            //decimal slowLengthSma = values[0];
             /****************/
 
             decimal slowLengthEma = CalculateEmaValue(values[_slowLength], _slowLength, slowLengthSma);
@@ -78,6 +78,8 @@ namespace DataProcessing.Indicators
             _macdValues.ResultSet[_macdKey] = macd;
             _macdValues.LastUpdated = DateTimeOffset.UtcNow;
             _macdBufferValues.Add(macd);
+            for (int i = _slowLength; i < values.Count; i++)
+                GetNextMacdValueSet(values[i]);
         }
         private void GetNextMacdValueSet(decimal currentValue)
         {
@@ -88,6 +90,7 @@ namespace DataProcessing.Indicators
             _slow = slowLengthEma;
             _fast = fastLengthEma;
             _macdValues.ResultSet[_macdKey] = macd;
+            _macdBufferValues.Add(macd);
 
             var macdValuesProcessed = _macdBufferValues.Count;
 

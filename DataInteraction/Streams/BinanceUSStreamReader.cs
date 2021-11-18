@@ -18,7 +18,7 @@ namespace DataInteraction.Streams
     {
         private WebsocketClient _websocketClient;
         private bool disposedValue;
-        private const string BinanceUSWebsocketAddress = @"wss://stream.binance.us:9443/ws/!bookTicker";
+        private const string BinanceUSWebsocketAddress = @"wss://stream.binance.us:9443/ws";
         private const int ConnectId = 1000, DisconnectId = 2000; //IDs are arbritrary, used simply to help separate messages
         private const int StreamMillisecondsDelay = 334; //Binance accepts maximum of 5 incoming messages per second. We will send a maximum of 3 + 1 pong to ensure we don't reach limit.
         private int _id = 0, _totalStreams = 0;
@@ -106,7 +106,7 @@ namespace DataInteraction.Streams
             {
                 _websocketClient.Send(subscribeText);
                 _totalStreams += 1;
-                Log?.Add($"Subscribed to {tradingPair.QuoteAssetSymbol}{tradingPair.BaseAssetSymbol}_{tradingPair.GetBinanceIntervalString()} on US Binance Stream");
+                Log?.Add($"Subscribed to {tradingPair.GetUppercaseSymbolPair()}_{tradingPair.GetBinanceIntervalString()} on US Binance Stream");
                 sentJustFine = true;
             }
             catch
@@ -134,7 +134,7 @@ namespace DataInteraction.Streams
         private string GetCandlestickConnectionString(TradingPair pair)
         {
             var interval = pair.GetBinanceIntervalString();
-            return $"{pair.BaseAssetSymbol.Trim().ToLower()}{pair.QuoteAssetSymbol.Trim().ToLower()}@kline_{interval}";
+            return $"{pair.GetLowercaseSymbolPair()}@kline_{interval}";
         }
         
         private bool TryGetCandlestickFromEntity(BinanceUsCandleEntity entity, out Candlestick candlestick)
@@ -143,7 +143,7 @@ namespace DataInteraction.Streams
             candlestick = null;
             try
             {
-                var subscribedPair = CurrentlySubscribed.SingleOrDefault(x => entity.Symbol.ToUpper() == $"{x.BaseAssetSymbol.ToUpper()}{x.QuoteAssetSymbol.ToUpper()}" &&
+                var subscribedPair = CurrentlySubscribed.SingleOrDefault(x => entity.Symbol.ToUpper() == x.GetUppercaseSymbolPair() &&
                                                                               entity.Kline.Interval == x.GetBinanceIntervalString());
                 if (subscribedPair != null)
                 {
@@ -157,8 +157,10 @@ namespace DataInteraction.Streams
                         Start = DateTimeOffset.FromUnixTimeMilliseconds(entity.Kline.StartTime),
                         End = DateTimeOffset.FromUnixTimeMilliseconds(entity.Kline.CloseTime),
                         TradeVolume = entity.Kline.NumberOfTrades,
-                        TradingPair = subscribedPair
+                        TradingPair = subscribedPair,
+                        IsOpen = entity.Kline.IsOpen
                     };
+                    hasSubscriptionData = true;
                 }
             }
             catch
@@ -173,7 +175,7 @@ namespace DataInteraction.Streams
         private void OnReconnection(ReconnectionInfo info)
         {
             foreach (var pair in CurrentlySubscribed)
-                CandleFeedAvailabilityChanged(this, new CandleFeedAvailabilityEvent() { IsAvailable = true, TradingPair = pair });
+                CandleFeedAvailabilityChanged?.Invoke(this, new CandleFeedAvailabilityEvent() { IsAvailable = true, TradingPair = pair });
             Log?.Add("Reconnected to US Binance Stream");
 
             //List<TradingPair> unsubscribed = new List<TradingPair>();
@@ -217,7 +219,7 @@ namespace DataInteraction.Streams
                 if (!EqualityComparer<T>.Default.Equals(objectReturned, default(T)))
                     success = true;
             }
-            catch {
+            catch (Exception ex) {
                 success = false;
             }
 

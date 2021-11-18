@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataInteraction.RestfulEntities
 {
-    public class BinanceUSKlineRequestEntity
+    public class BinanceKlineRequestEntity
     {
         [ApiParameter("symbol")]
         public string Symbol { get; set; }

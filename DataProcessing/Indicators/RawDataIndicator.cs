@@ -1,4 +1,5 @@
 ﻿using Contracts.Concrete;
+using Contracts.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace DataProcessing.Indicators
 
         public RawDataIndicator(TradingPair tradingPair) : base(tradingPair, false, 0)
         {
-            _prefix = $"{tradingPair.BaseAssetSymbol}{tradingPair.QuoteAssetSymbol}.{tradingPair.Exchange}.{tradingPair.CandlestickInterval.TotalMinutes}";
+            _prefix = $"{tradingPair.GetUppercaseSymbolPair()}.{tradingPair.Exchange}.{tradingPair.CandlestickInterval.TotalMinutes}";
         }
 
         protected override void CalculateIndicator()

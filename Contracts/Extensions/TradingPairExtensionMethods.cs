@@ -78,5 +78,13 @@ namespace Contracts.Extensions
 
             return interval;
         }
+        public static string GetUppercaseSymbolPair(this TradingPair tradingPair, string separator ="")
+        {
+            return tradingPair.BaseAsset.ToUpper().Trim() + separator + tradingPair.QuoteAsset.ToUpper().Trim();
+        }
+        public static string GetLowercaseSymbolPair(this TradingPair tradingPair, string separator = "")
+        {
+            return tradingPair.BaseAsset.ToLower().Trim() + separator + tradingPair.QuoteAsset.ToLower().Trim();
+        }
     }
 }

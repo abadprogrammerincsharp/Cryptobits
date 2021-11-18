@@ -11,24 +11,30 @@ using System.Threading.Tasks;
 using Contracts.Extensions;
 using Newtonsoft.Json;
 using Contracts.Generics;
+using Newtonsoft.Json.Linq;
+using Contracts.Enums;
+using System.Reflection;
 
 namespace DataInteraction.RestfulApis
 {
-    public class BinanceUSRestfulApi
+    public partial class BinanceUSRestfulApi 
     {
         const string BinanceUSApiServer = "https://api.binance.us";
         const string Get = "GET", Put = "PUT", Post = "POST", Delete = "DELETE";
         const string Second = "SECOND", Minute = "MINUTE", Hour = "HOUR", Day = "DAY";
         const string RequestWeight = "REQUEST_WEIGHT", Orders = "ORDERS", RawRequests = "RAW_REQUESTS";
-        private const string ExchangeInfoEndpoint = "/api/v3/exchangeInfo",
-                             KlineInfoEndpoint = "/api/v3/klines";
+        private const string ExchangeInfoEndpoint = "/api/v3/exchangeInfo";
         List<ApiLimit> _apiLimits = new List<ApiLimit>();
+        private ApiSecret _apiSecret;
         List<TradeSymbol> _tradeSymbols = new List<TradeSymbol>();
         DateTimeOffset _nextRequestTime = DateTimeOffset.MinValue;
         static HttpClient apiClient = new HttpClient();
         
         public ILogger Log { get; set; }
 
+        public BinanceUSRestfulApi(ApiSecret secret = null) { _apiSecret = secret; }
+
+        //IApiExchange
         public async Task GetExchangeDetailsAsync()
         {
             var webRequest = await SendExchangeInfoRequest();
@@ -46,21 +52,6 @@ namespace DataInteraction.RestfulApis
 
             UpdateApiLimits(headers);
         }
-        public async Task<IEnumerable<Candlestick>> GetLatestCandlesAsync(TradingPair tradingPair, int quantity)
-        {
-            BinanceUSKlineRequestEntity request = new BinanceUSKlineRequestEntity()
-            {
-                Interval = tradingPair.GetBinanceIntervalString(),
-                Limit = quantity > 1000 ? 1000 : quantity,
-                Symbol = tradingPair.BaseAssetSymbol.ToUpper() + tradingPair.QuoteAssetSymbol.ToUpper()
-            };
-
-            throw new NotImplementedException();
-
-            //return await SendRequestAsync(request, KlineInfoEndpoint);
-        }
-
-        //SendGetRequest<T>
         private async Task<Tuple<BinanceExchangeInfoResponseEntity, HttpResponseMessage>> SendExchangeInfoRequest()
         {
             var endpoint = BinanceUSApiServer + ExchangeInfoEndpoint;
@@ -69,84 +60,121 @@ namespace DataInteraction.RestfulApis
             var responseAsEntity = JsonConvert.DeserializeObject<BinanceExchangeInfoResponseEntity>(responseString);
             return Tuple.Create(responseAsEntity, response);
         }
-        private async Task<string> SendRequestAsync(string endpoint, string requestType = Get)
+             
+        //Generic Requests
+        private async Task<string> SendRequestAsync(string endpoint, string requestType = Get, bool usesApiSecret = false)
         {
             var finalEndpoint = BinanceUSApiServer + (endpoint.StartsWith("/") ? endpoint : "/" + endpoint);
             HttpResponseMessage response = null;
-            switch (requestType)
+            using (var apiMessage = new HttpRequestMessage())
             {
-                case Get:
-                    response = await apiClient.GetAsync(finalEndpoint);
-                    break;
-                case Put:
-                    response = await apiClient.PutAsync(finalEndpoint, null);
-                    break;
-                case Post:
-                    response = await apiClient.PostAsync(finalEndpoint, null);
-                    break;
-                case Delete:
-                    response = await apiClient.DeleteAsync(finalEndpoint);
-                    break;
+                apiMessage.RequestUri = new Uri(finalEndpoint);
+                if (usesApiSecret)
+                    apiMessage.Headers.Add("X-MBX-APIKEY", _apiSecret.ApiKey);
+
+                switch (requestType)
+                {
+                    case Get:
+                        apiMessage.Method = HttpMethod.Get;
+                        break;
+                    case Put:
+                        apiMessage.Method = HttpMethod.Put;
+                        break;
+                    case Post:
+                        apiMessage.Method = HttpMethod.Post;
+                        break;
+                    case Delete:
+                        apiMessage.Method = HttpMethod.Delete;
+                        break;
+                }
+                response = await apiClient.SendAsync(apiMessage);
             }
             if (response is null)
                 return null;
 
-            var responseAsEntity = await CheckResponse(response);
-            return responseAsEntity;
+            var responseAsString = await CheckResponse(response);
+            return responseAsString;
         }
-        private async Task<string> SendRequestAsync<TRequest>(TRequest requestEntity, string endpoint, string requestType = Get)
+        private async Task<string> SendRequestAsync<TRequest>(TRequest requestEntity, string endpoint, string requestType = Get, bool usesApiSecret = false)
         {
             HttpResponseMessage response = null;
-            var finalEndpoint = BuildQueryString(endpoint, requestEntity);
-
-            switch (requestType)
+            var finalEndpoint = BuildQueryString(endpoint, requestEntity, usesApiSecret);
+            using (var apiMessage = new HttpRequestMessage())
             {
-                case Get:
-                    response = await apiClient.GetAsync(finalEndpoint);
-                    break;
-                case Put:
-                    response = await apiClient.PutAsync(finalEndpoint, null);
-                    break;
-                case Post:
-                    response = await apiClient.PostAsync(finalEndpoint, null);
-                    break;
-                case Delete:
-                    response = await apiClient.DeleteAsync(finalEndpoint);
-                    break;
+                apiMessage.RequestUri = new Uri(finalEndpoint);
+                if (usesApiSecret)
+                    apiMessage.Headers.Add("X-MBX-APIKEY", _apiSecret.ApiKey);
+
+                switch (requestType)
+                {
+                    case Get:
+                        apiMessage.Method = HttpMethod.Get;
+                        break;
+                    case Put:
+                        apiMessage.Method = HttpMethod.Put;
+                        break;
+                    case Post:
+                        apiMessage.Method = HttpMethod.Post;
+                        break;
+                    case Delete:
+                        apiMessage.Method = HttpMethod.Delete;
+                        break;
+                }
+                response = await apiClient.SendAsync(apiMessage);
             }
             if (response is null)
                 return null;
 
-            var responseAsEntity = await CheckResponse(response);
-            return responseAsEntity;
+            var responseAsString = await CheckResponse(response);
+            return responseAsString;
         }
-        private string BuildQueryString<T>(string endpoint, T entity)
+        private string BuildQueryString<T>(string endpoint, T entity, bool usesApiSecret)
         {
             StringBuilder builder = new StringBuilder($"{BinanceUSApiServer}{(endpoint.StartsWith("/") ? endpoint : "/" + endpoint)}");
+            StringBuilder queryString = new StringBuilder();
+            int parameterCount = 0;
             try
             {
                 var propertiesWithAttributes = entity.GetType().GetProperties().Where(x => Attribute.IsDefined(x, typeof(ApiParameterAttribute)));
 
                 if (propertiesWithAttributes != null)
                 {
-                    builder.Append("?");
                     for (int i = 0; i < propertiesWithAttributes.Count(); i++)
                     {
                         var property = propertiesWithAttributes.ElementAt(i);
-                        var propertyName = (ApiParameterAttribute)property.GetCustomAttributes(typeof(ApiParameterAttribute), true)[0];
-                        var propertyValue = property.GetValue(entity);
-                        builder.Append(propertyName.ParameterName + "=" + propertyValue.ToString());
-                        if (i + 1 < propertiesWithAttributes.Count())
-                            builder.Append("&");
+                        parameterCount = AppendQueryParameter(entity, builder, queryString, property, parameterCount);
                     }
+                    
+                    var query = queryString.ToString();
+                    if (usesApiSecret)
+                        queryString.Append("&signature=" + _apiSecret.GetHmacSha256(query));
+                    builder.Append(queryString.ToString());
                 }
             }
             catch { Log?.Add("Unable to get properties on entity " + entity?.GetType().ToString() ?? "(null object)"); }
 
             return builder.ToString();
         }
+        private static int AppendQueryParameter<T>(T entity, StringBuilder builder, StringBuilder queryString, PropertyInfo property, int parameterCount)
+        {            
+            var propertyName = (ApiParameterAttribute)property.GetCustomAttributes(typeof(ApiParameterAttribute), true)[0];
+            var propertyValue = property.GetValue(entity);
 
-        //CheckResponse<T>
+            if (!string.IsNullOrWhiteSpace(propertyValue.ToString()))
+            {
+                parameterCount += 1;
+                if (parameterCount > 1)
+                    queryString.Append("&");
+                else if (parameterCount == 1)
+                    builder.Append("?");
+
+                queryString.Append(propertyName.ParameterName + "=" + propertyValue.ToString());
+            }
+
+            return parameterCount;
+        }
+
+        //Generic Respones
         private async Task<string> CheckResponse(HttpResponseMessage response, bool checkApiLimits = true)
         {
             if (checkApiLimits)
@@ -154,9 +182,10 @@ namespace DataInteraction.RestfulApis
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests || (int)response.StatusCode == 418) //Server will return "I'm a teapot" if banned.
                 HandleFourTwentyNineError(response.Headers);
 
-           return await response.Content.ReadAsStringAsync();            
+           return await response.Content.ReadAsStringAsync();
         }
 
+        //API Limits
         private ApiLimit GetApiLimit(RateLimit rateLimit)
         {
             ApiLimit apiLimit = new ApiLimit();
@@ -211,7 +240,6 @@ namespace DataInteraction.RestfulApis
                     limits[i].UpdateLimit(headers);
 
         }
-
         private void HandleFourTwentyNineError(HttpResponseHeaders headers)
         {
            var retryAfter = headers.SingleOrDefault(x => x.Key.ToLower() == "retry-after");
@@ -222,7 +250,7 @@ namespace DataInteraction.RestfulApis
                 Log?.Add("Received a 418/429 error. Cannot perform any API requests until " + _nextRequestTime.ToString(), Contracts.Enums.LoggingLevel.Critical);
             }
         }
-        private bool CanPlaceRawRequest()
+        private bool CanMakeAnyApiCall()
         {
             bool canPlaceRawRequest = true;
             var rawRequestLimits = _apiLimits.Where(x => x.LimitType == RawRequests);
@@ -236,21 +264,21 @@ namespace DataInteraction.RestfulApis
 
             return canPlaceRawRequest && DateTimeOffset.UtcNow > _nextRequestTime;
         }
-        private bool CanPlaceOrder()
+        private bool CanMakeOrderApiCall(int orderCount = 1, int weight = 1)
         {
             bool canPlaceOrder = true;
             var orderLimits = _apiLimits.Where(x => x.LimitType == Orders);
 
             if ((orderLimits?.Count() ?? 0) > 0)
             {
-                var reachedMax = orderLimits.Where(x => x.CurrentCount + 1 >= x.Limit);
+                var reachedMax = orderLimits.Where(x => x.CurrentCount + orderCount >= x.Limit);
                 if ((reachedMax?.Count() ?? 0) > 0)
                     canPlaceOrder = false;
             }
 
-            return canPlaceOrder;
+            return canPlaceOrder && CanMakeWeightedApiCall(weight);
         }
-        private bool CanMakeApiCall(int weight)
+        private bool CanMakeWeightedApiCall(int weight)
         {
             bool canPlaceApiCall = true;
             var apiRequestLimits = _apiLimits.Where(x => x.LimitType == RequestWeight);
@@ -262,15 +290,8 @@ namespace DataInteraction.RestfulApis
                     canPlaceApiCall = false;
             }
 
-            return canPlaceApiCall;
-        }
-
-        private List<Candlestick> TransformResponseToCandlesticks (string response)
-        {
-            throw new NotImplementedException();
-        }
-
-        
+            return canPlaceApiCall && CanMakeAnyApiCall();
+        }        
     }
     
 }

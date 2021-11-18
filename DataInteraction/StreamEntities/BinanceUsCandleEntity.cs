@@ -12,27 +12,27 @@ namespace DataInteraction.StreamEntities
         [JsonProperty("e")]
         public string EventType { get; set; }
         [JsonProperty("E")]
-        public int EventTime { get; set; }
+        public long EventTime { get; set; }
         [JsonProperty("s")]
         public string Symbol { get; set; }
-        [JsonProperty("k")]
+        [JsonProperty("k", Required = Required.Always)]
         public Kline Kline { get; set; }
 
     }
     public class Kline
     {
         [JsonProperty("t")]
-        public int StartTime { get; set; }
+        public long StartTime { get; set; }
         [JsonProperty("T")]
-        public int CloseTime { get; set; }
+        public long CloseTime { get; set; }
         [JsonProperty("s")]
         public string Symbol { get; set; }
         [JsonProperty("i")]
         public string Interval { get; set; }
         [JsonProperty("f")]
-        public int FirstTradeID { get; set; }
+        public long FirstTradeID { get; set; }
         [JsonProperty("L")]
-        public int LastTradeID { get; set; }
+        public long LastTradeID { get; set; }
         [JsonProperty("o")]
         public decimal OpenPrice { get; set; }
         [JsonProperty("c")]
@@ -44,9 +44,9 @@ namespace DataInteraction.StreamEntities
         [JsonProperty("v")]
         public string BaseAssetVolume { get; set; }
         [JsonProperty("n")]
-        public int NumberOfTrades { get; set; }
+        public decimal NumberOfTrades { get; set; }
         [JsonProperty("x")]
-        public bool IsClosed { get; set; }
+        public bool IsOpen { get; set; }
         [JsonProperty("q")]
         public string QuoteAssetVolume { get; set; }
         [JsonProperty("V")]
