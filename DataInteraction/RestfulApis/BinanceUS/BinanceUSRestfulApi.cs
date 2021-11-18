@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 using Contracts.Enums;
 using System.Reflection;
 
-namespace DataInteraction.RestfulApis
+namespace DataInteraction.RestfulApis.BinanceUS
 {
     public partial class BinanceUSRestfulApi 
     {

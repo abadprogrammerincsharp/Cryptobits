@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataInteraction.RestfulApis;
-using DataInteraction.Streams;
+using DataInteraction.RestfulApis.BinanceUS;
+using DataInteraction.Streams.BinanceUS;
 using DataProcessing.Indicators;
 using Contracts.Concrete;
 using Contracts.Interfaces;
-using Newtonsoft.Json;
-using DataInteraction.RestfulEntities;
-using Newtonsoft.Json.Linq;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace ConsoleApps.InteractiveDebugging
 {

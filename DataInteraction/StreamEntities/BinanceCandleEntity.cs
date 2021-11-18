@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataInteraction.StreamEntities
 {
-    public class BinanceUsCandleEntity
+    public class BinanceCandleEntity
     {
         [JsonProperty("e")]
         public string EventType { get; set; }
