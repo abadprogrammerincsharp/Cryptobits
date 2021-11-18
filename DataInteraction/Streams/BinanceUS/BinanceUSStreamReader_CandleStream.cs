@@ -28,6 +28,7 @@ namespace DataInteraction.Streams.BinanceUS
                 return false;
             }
 
+            //Binance accepts maximum of 5 incoming messages per second. We will send a maximum of 3 + 1 pong to ensure we don't reach limit.
             lock (_syncObject)
             {
                 _id = (_id == 999) ? 0 : _id + 1;
@@ -42,12 +43,12 @@ namespace DataInteraction.Streams.BinanceUS
             {
                 _websocketClient.Send(subscribeText);
                 _totalStreams += 1;
-                Log?.Add($"Subscribed to {tradingPair.GetUppercaseSymbolPair()}_{tradingPair.GetBinanceIntervalString()} on US Binance Stream");
+                Log?.Add($"Subscribed to {tradingPair.GetUppercaseSymbolPair()}_{tradingPair.GetBinanceIntervalString()} on Binance US Stream");
                 sentJustFine = true;
             }
             catch
             {
-                Log?.Add("Could not subscribe to {tradingPair.QuoteAssetSymbol}{tradingPair.BaseAssetSymbol}_{GetIntervalAsString(tradingPair.CandlestickInterval)}", LoggingLevel.Error);
+                Log?.Add($"Could not subscribe to {tradingPair.GetUppercaseSymbolPair()}_{tradingPair.GetBinanceIntervalString()}", LoggingLevel.Error);
                 sentJustFine = false;
             }
 
