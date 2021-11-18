@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataInteraction.RestfulEntities
+namespace DataInteraction.RestfulEntities.Binance
 {
     public class BinanceKlineRequestEntity
     {

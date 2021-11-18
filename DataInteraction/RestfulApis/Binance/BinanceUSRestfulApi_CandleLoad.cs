@@ -1,7 +1,7 @@
 ﻿using Contracts.Concrete;
 using Contracts.Extensions;
 using Contracts.Interfaces;
-using DataInteraction.RestfulEntities;
+using DataInteraction.RestfulEntities.Binance;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataInteraction.RestfulApis.BinanceUS
+namespace DataInteraction.RestfulApis.Binance
 {
    public partial class BinanceUSRestfulApi : ICandleLoad
     {

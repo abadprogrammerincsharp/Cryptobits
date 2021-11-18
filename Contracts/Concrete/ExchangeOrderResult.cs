@@ -9,6 +9,16 @@ namespace Contracts.Concrete
 {
     public class ExchangeOrderResult
     {
+        public ExchangeOrderResult() { }
+        public ExchangeOrderResult(TradingPair pair, OrderSide side, object price, object qtyRequested, object qtyExecuted)
+        {
+            TradingPair = pair;
+            Side = side;
+            Price = Convert.ToDecimal(price);
+            QuantityRequested = Convert.ToDecimal(qtyRequested);
+            QuantityExecuted = Convert.ToDecimal(qtyExecuted);
+        }
+
         public TradingPair TradingPair { get; set; }
         public OrderSide Side { get; set; }
         public decimal Price { get; set; }

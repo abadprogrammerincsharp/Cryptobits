@@ -30,6 +30,8 @@ namespace Contracts.Concrete
         public TradingPair TradingPair { get; set; }
         public string OrderId { get; set; }
         public decimal Price { get; set; }
+        public decimal? StopLossLimitPrice { get; set; }
+        public decimal? TakeProfitLimitPrice { get; set; }
         public decimal Quantity { get; set; }
         public OrderSide Side { get; set; }
         public TimeInForce TimeInForce { get; set; }

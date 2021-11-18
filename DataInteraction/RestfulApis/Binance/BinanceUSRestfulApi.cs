@@ -1,6 +1,6 @@
 ﻿using Contracts.Concrete;
 using Contracts.Interfaces;
-using DataInteraction.RestfulEntities;
+using DataInteraction.RestfulEntities.Binance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 using Contracts.Enums;
 using System.Reflection;
 
-namespace DataInteraction.RestfulApis.BinanceUS
+namespace DataInteraction.RestfulApis.Binance
 {
     public partial class BinanceUSRestfulApi 
     {

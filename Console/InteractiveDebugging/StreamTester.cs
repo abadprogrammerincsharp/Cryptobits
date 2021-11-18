@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataInteraction.RestfulApis.BinanceUS;
-using DataInteraction.Streams.BinanceUS;
+using DataInteraction.RestfulApis.Binance;
+using DataInteraction.Streams.Binance;
 using DataProcessing.Indicators;
 using Contracts.Concrete;
 using Contracts.Interfaces;

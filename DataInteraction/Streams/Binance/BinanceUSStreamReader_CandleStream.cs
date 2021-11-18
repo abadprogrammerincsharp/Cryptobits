@@ -2,14 +2,14 @@
 using Contracts.Enums;
 using Contracts.Extensions;
 using Contracts.Interfaces;
-using DataInteraction.StreamEntities;
+using DataInteraction.StreamEntities.Binance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataInteraction.Streams.BinanceUS
+namespace DataInteraction.Streams.Binance
 {
     public partial class BinanceUSStreamReader : ICandleFeed
     {

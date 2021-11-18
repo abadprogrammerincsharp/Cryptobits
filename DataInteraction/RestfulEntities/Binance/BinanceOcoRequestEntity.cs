@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts.Concrete;
 
-namespace DataInteraction.RestfulEntities
+namespace DataInteraction.RestfulEntities.Binance
 {
     public class BinanceOcoRequestEntity
     {
@@ -34,7 +34,7 @@ namespace DataInteraction.RestfulEntities
         public string StopClientOrderId { get; set; }
 
         [ApiParameter("stopPrice")]
-        public decimal StopPrice { get; set; }
+        public decimal StopLossPrice { get; set; }
 
         [ApiParameter("stopLimitPrice")]
         public decimal? StopLimitPrice { get; set; }

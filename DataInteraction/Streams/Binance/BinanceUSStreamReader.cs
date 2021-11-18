@@ -8,11 +8,11 @@ using System.Net.WebSockets;
 using System.Reactive.Linq;
 using System.Collections.Generic;
 using System.Linq;
-using DataInteraction.StreamEntities;
+using DataInteraction.StreamEntities.Binance;
 using Contracts.Enums;
 using Contracts.Extensions;
 
-namespace DataInteraction.Streams.BinanceUS
+namespace DataInteraction.Streams.Binance
 {
     public partial class BinanceUSStreamReader 
     {
