@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,9 +19,18 @@ namespace DataInteraction.RestfulApis.Binance
         public long MaxSecondsToWaitForProcessing { get; set; }
 
         //IOrderApi
-        public async Task<ExchangeOrderResult> PutOrder(ExchangeOrder order) { throw new NotImplementedException(); }
-        public async Task<ExchangeOrderResult> GetOrder(ExchangeOrder order) { throw new NotImplementedException(); }
-        public async Task<ExchangeOrderResult> DeleteOrder(ExchangeOrder order) { throw new NotImplementedException(); }
+        public async Task<ExchangeOrderResult> PutOrder(ExchangeOrder order) 
+        {
+            return await PlaceOrderRequest(order, Put);
+        }
+        public async Task<ExchangeOrderResult> GetOrder(ExchangeOrder order)
+        {
+            return await PlaceOrderRequest(order, Get);
+        }
+        public async Task<ExchangeOrderResult> DeleteOrder(ExchangeOrder order)
+        {
+            return await PlaceOrderRequest(order, Delete);
+        }
         public async Task<List<ExchangeOrderResult>> PutOcoOrder(ExchangeOrder limitOrder, ExchangeOrder stopLossOrder, decimal? stopLossLimit = null)
         {
             var request = new BinanceOcoRequestEntity()
@@ -59,6 +69,30 @@ namespace DataInteraction.RestfulApis.Binance
         {
             return CanMakeOrderApiCall(2, 2);
         }
+        
+        private async Task<ExchangeOrderResult> PlaceOrderRequest(ExchangeOrder order, string httpMethod)
+        {
+            var request = new BinanceOrderRequestEntity()
+            {
+                ClientOrderId = order.OrderId,
+                IcebergQuantity = order.IcebergQuantity,
+                LimitPrice = order.Price,
+                Quantity = order.Quantity,
+                RecevingWindow = MaxSecondsToWaitForProcessing,
+                Side = order.Side == OrderSide.Buy ? "BUY" : "SELL",
+                StopLossPrice = order.StopLossLimitPrice,
+                QuoteOrderQuantity = order.QuoteOrderQuantity,
+                Symbol = order.TradingPair.GetUppercaseSymbolPair(),
+                TimeInForce = order.GetTimeInForceAsBinanceString()
+            };
 
+            var response = await SendRequestAsync(request, OrderEndpoint, httpMethod, true);
+            var responseAsEntity = JsonConvert.DeserializeObject<BinanceOrderResponseEntity>(response);
+
+            var orderResult = new ExchangeOrderResult(order.TradingPair, order.Side, responseAsEntity.Price, responseAsEntity.OrigQty, responseAsEntity.ExecutedQty);
+            orderResult.SetBinanceOrderStatus(responseAsEntity.Status);
+
+            return orderResult;
+        }
     }
 }
