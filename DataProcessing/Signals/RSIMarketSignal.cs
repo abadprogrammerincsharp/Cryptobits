@@ -5,18 +5,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataProcessing.Indicators;
 
 namespace DataProcessing.Signals
 {
     public static class RSIMarketSignal
     {
-        public static MarketSignal GetMarketSignal (CircularBuffer<decimal> rsiValues, decimal oversold, decimal overbought, int rsiSampleCount = 10, int trendCount = 3)
+        private const string RSIKeyword = "RSI";
+        public static MarketSignal GetMarketSignal (RsiCandlestickIndicator rsiIndicator, decimal oversold, decimal overbought, int rsiSampleCount = 10, int trendCount = 3)
         {
             MarketSignal signal = MarketSignal.Neutral;
+            var rsiResults = rsiIndicator.Results.ToList();
+            var rsiValues = rsiResults.Select(x=>x.GetResultByKeyword(RSIKeyword)).ToList();
 
-            var rsi = rsiValues.ToList();
-            rsi.Reverse(); //Queue order (FIFO), meaning latest is last. We want to start from the last.
-            var latestRsiValues = rsi.GetRange(0, rsiSampleCount);
+            rsiValues.Reverse(); //Queue order (FIFO), meaning latest is last. We want to start from the last.
+            var latestRsiValues = rsiValues.GetRange(0, rsiSampleCount);
             signal = CheckForOversoldOrOverbought(oversold, overbought, signal, latestRsiValues);
             signal = CheckForRateOfChange(trendCount, signal, latestRsiValues);
 

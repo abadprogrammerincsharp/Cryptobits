@@ -1,4 +1,5 @@
 ﻿using Contracts.Concrete;
+using Contracts.Interfaces;
 using Contracts.Enums;
 using Contracts.Extensions;
 using DataInteraction.RestfulEntities.Binance;
@@ -12,14 +13,14 @@ using System.Threading.Tasks;
 
 namespace DataInteraction.RestfulApis.Binance
 {
-    public partial class BinanceUSRestfulApi
+    public partial class BinanceUSRestfulApi : IOrderApi
     {
         const string OCOEndpoint = "/api/v3/order/oco";
         const string OrderEndpoint = "/api/v3/order";
-        public long MaxSecondsToWaitForProcessing { get; set; }
+        public long ProcessingMaxMilliseconds { get; set; }
 
         //IOrderApi
-        public async Task<ExchangeOrderResult> PutOrder(ExchangeOrder order) 
+        public async Task<ExchangeOrderResult> PutOrder(ExchangeOrder order)
         {
             return await PlaceOrderRequest(order, Put);
         }
@@ -33,6 +34,8 @@ namespace DataInteraction.RestfulApis.Binance
         }
         public async Task<List<ExchangeOrderResult>> PutOcoOrder(ExchangeOrder limitOrder, ExchangeOrder stopLossOrder, decimal? stopLossLimit = null)
         {
+            if (!CanPlaceOcoOrder())
+                throw new ApplicationException("Cannot place OCO order - order/api limit reached!");
             var request = new BinanceOcoRequestEntity()
             {
                 Quantity = limitOrder.Quantity,
@@ -49,7 +52,7 @@ namespace DataInteraction.RestfulApis.Binance
                 StopLimitPrice = stopLossOrder.StopLossLimitPrice,
                 StopLimitTimeInForce = stopLossOrder.StopLossLimitPrice != null ? stopLossOrder.GetTimeInForceAsBinanceString() : null,
                 TimestampInUnixSeconds = limitOrder.TimestampInUnixMilliseconds,
-                RecevingWindow = MaxSecondsToWaitForProcessing
+                RecevingWindow = ProcessingMaxMilliseconds
             };
 
             var response = await SendRequestAsync(request, OCOEndpoint, Post, true);
@@ -63,22 +66,29 @@ namespace DataInteraction.RestfulApis.Binance
             limitOrderResult.SetBinanceOrderStatus(limitOrderResponse.Status);
             stopLossOrderResult.SetBinanceOrderStatus(stopOrderResponse.Status);
 
-            return new List<ExchangeOrderResult>(){limitOrderResult, stopLossOrderResult};
+            return new List<ExchangeOrderResult>() { limitOrderResult, stopLossOrderResult };
         }
         public bool CanPlaceOcoOrder()
         {
             return CanMakeOrderApiCall(2, 2);
         }
-        
+        public bool CanPlaceOrder()
+        {
+            return CanMakeOrderApiCall(1, 1);
+        }
+
         private async Task<ExchangeOrderResult> PlaceOrderRequest(ExchangeOrder order, string httpMethod)
         {
+            if (!CanPlaceOrder())
+                throw new ApplicationException("Cannot place order - order/api limit reached!");
+
             var request = new BinanceOrderRequestEntity()
             {
                 ClientOrderId = order.OrderId,
                 IcebergQuantity = order.IcebergQuantity,
                 LimitPrice = order.Price,
                 Quantity = order.Quantity,
-                RecevingWindow = MaxSecondsToWaitForProcessing,
+                RecevingWindow = ProcessingMaxMilliseconds,
                 Side = order.Side == OrderSide.Buy ? "BUY" : "SELL",
                 StopLossPrice = order.StopLossLimitPrice,
                 QuoteOrderQuantity = order.QuoteOrderQuantity,

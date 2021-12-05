@@ -26,5 +26,12 @@ namespace Contracts.Concrete
             return $"{ResultSet[header]}";
         }
 
+        public decimal GetResultByKeyword(string keyword)
+        {
+            var keyMatch = ResultSet.Keys.Single(x => x.ToLower().Contains(keyword.ToLower()));
+            return ResultSet[keyMatch];
+        }
+
+        
     }
 }
