@@ -17,6 +17,8 @@ namespace DataInteraction.RestfulApis.Binance
         public int MinCandleQuantity { get { return 1000; } }
         public int MaxCandleQuantity { get { return 1000; } }
 
+        private Dictionary<TradingPair, IEnumerable<Candlestick>> lastLoaded;
+
         //ICandleLoad
         public async Task<IEnumerable<Candlestick>> GetLatestCandlesAsync(TradingPair tradingPair, int quantity)
         {
@@ -26,6 +28,10 @@ namespace DataInteraction.RestfulApis.Binance
                 Limit = quantity > MaxCandleQuantity ? MaxCandleQuantity : quantity,
                 Symbol = tradingPair.GetUppercaseSymbolPair()
             };
+                        
+            if (lastLoaded.TryGetValue(tradingPair, out var candles) && candles.Last().End + tradingPair.CandlestickInterval > DateTimeOffset.Now)
+                return lastLoaded[tradingPair];
+                
 
             var response = await SendRequestAsync(request, KlineInfoEndpoint);
             return TransformResponseToCandlesticks(tradingPair, response);
@@ -53,6 +59,7 @@ namespace DataInteraction.RestfulApis.Binance
                     ));
 
             }
+            lastLoaded.Add(pair, candlesticks);
             return candlesticks;
         }
     }

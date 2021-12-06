@@ -17,15 +17,62 @@ namespace DataProcessing.Strategies
 
         private CircularBuffer<MarketSignal> _patternSignals = new CircularBuffer<MarketSignal>(3);
         private CircularBuffer<MarketSignal> _indicatorSignals = new CircularBuffer<MarketSignal>(3);
-        public event EventHandler<string> CandlestickPatternFound;
+        private CircularBuffer<Candlestick> _tradingCandlesticks = new CircularBuffer<Candlestick>(3);
+        private CircularBuffer<Candlestick> _trendingCandlesticks = new CircularBuffer<Candlestick>(3);
+        private object lockObject = new object();
+        private bool _sevenUpdated = false, _fourteenUpdated = false, _twentyEightUpdated = false, 
+                     _macdUpdated = false, _rsiUpdated = false, _candlesUpdated = false;
+
 
         //EMA 7/14/28 (current period * ~10) will determine trend
         //Candle pattern highlights entry/exit, MACD and RSI confirm
         //Volume valdiates movement against the trend. 
 
-        ICandleFeed tradingStream, trendStream;
+        ICandleFeed _tradingStream, _trendStream;
         ICandleLoad tradingLoad, trendLoad;
+        ILogger logger;
 
+        EmaCandlestickIndicator _seven, _fourteen, _twentyEight;
+        MacdCandlestickIndicator _macd;
+        RsiCandlestickIndicator _rsi;
+
+
+        public event EventHandler<MarketSignal> MarketSignalUpdated;
+        public event EventHandler<string> CandlestickPatternFound;
+
+        private void InitializeComponents()
+        {
+            _tradingStream.ReceivedCandlestickData += (sender, candle) => _tradingCandlesticks.Add(candle);
+            _trendStream.ReceivedCandlestickData += (sender, candle) => _trendingCandlesticks.Add(candle);
+
+            _seven.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _sevenUpdated);
+            _fourteen.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _fourteenUpdated);
+            _twentyEight.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _twentyEightUpdated);
+            _macd.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _macdUpdated);
+            _rsi.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _rsiUpdated);
+            _tradingStream.ReceivedCandlestickData += (sender, e) => MarkIndicatorUpdated(ref _candlesUpdated);
+
+        }
+
+        private void MarkIndicatorUpdated(ref bool state)
+        {
+            lock (lockObject)
+            {
+                state = true;
+                if (_sevenUpdated && _fourteenUpdated && _twentyEightUpdated && _macdUpdated && _rsiUpdated && _candlesUpdated)
+                {
+                    GetMarketSignal();
+                    _sevenUpdated = false;
+                    _fourteenUpdated = false;
+                    _twentyEightUpdated = false;
+                    _macdUpdated = false;
+                    _rsiUpdated = false;
+                    _candlesUpdated = false;
+                }
+            }
+        }
+
+        private void GetMarketSignal() { /*TODO*/ }
         private bool IndicatorMatchesRecentPattern (MarketSignal indicatorSignal, MarketSignal patternSignal)
         {
             bool signalsMatch = indicatorSignal == patternSignal;
