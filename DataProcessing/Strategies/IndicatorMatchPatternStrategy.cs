@@ -36,6 +36,8 @@ namespace DataProcessing.Strategies
         MacdCandlestickIndicator _macd;
         RsiCandlestickIndicator _rsi;
 
+        private int _oversold, _overbought;
+
 
         public event EventHandler<MarketSignal> MarketSignalUpdated;
         public event EventHandler<string> CandlestickPatternFound;
@@ -51,6 +53,7 @@ namespace DataProcessing.Strategies
             _macd.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _macdUpdated);
             _rsi.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _rsiUpdated);
             _tradingStream.ReceivedCandlestickData += (sender, e) => MarkIndicatorUpdated(ref _candlesUpdated);
+            /*TODO, FINISH INDICATOR INIT*/
 
         }
 
@@ -72,7 +75,21 @@ namespace DataProcessing.Strategies
             }
         }
 
-        private void GetMarketSignal() { /*TODO*/ }
+        private void GetMarketSignal() 
+        {
+            if (_tradingCandlesticks.Count < 3)
+                return;
+
+            var candles = _tradingCandlesticks.ToList();
+            var lastSignal = _patternSignals.Count > 0 ? _patternSignals.ToList().Last() : MarketSignal.Neutral;
+
+            var patternSignal = GetMarketSignalFromCandles(candles[0], candles[1], candles[2], lastSignal);
+            var indicatorSignal = GetMarketSignalFromIndicators(candles[1], candles[2], _seven, _fourteen, _twentyEight, _macd, _rsi, _oversold, _overbought);
+
+            if (IndicatorMatchesRecentPattern(indicatorSignal, patternSignal))
+                MarketSignalUpdated?.Invoke(this, patternSignal);  
+        }
+
         private bool IndicatorMatchesRecentPattern (MarketSignal indicatorSignal, MarketSignal patternSignal)
         {
             bool signalsMatch = indicatorSignal == patternSignal;
@@ -203,5 +220,7 @@ namespace DataProcessing.Strategies
                 returnValue = MarketSignal.BullishReversal;
             return returnValue;
         }
+
+        
     }
 }
