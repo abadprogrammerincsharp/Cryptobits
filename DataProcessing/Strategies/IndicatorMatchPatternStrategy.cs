@@ -14,11 +14,10 @@ namespace DataProcessing.Strategies
 {
     public class IndicatorMatchPatternStrategy
     {
-
+        private TradingPair _pair;
         private CircularBuffer<MarketSignal> _patternSignals = new CircularBuffer<MarketSignal>(3);
         private CircularBuffer<MarketSignal> _indicatorSignals = new CircularBuffer<MarketSignal>(3);
         private CircularBuffer<Candlestick> _tradingCandlesticks = new CircularBuffer<Candlestick>(3);
-        private CircularBuffer<Candlestick> _trendingCandlesticks = new CircularBuffer<Candlestick>(3);
         private object lockObject = new object();
         private bool _sevenUpdated = false, _fourteenUpdated = false, _twentyEightUpdated = false, 
                      _macdUpdated = false, _rsiUpdated = false, _candlesUpdated = false;
@@ -28,9 +27,9 @@ namespace DataProcessing.Strategies
         //Candle pattern highlights entry/exit, MACD and RSI confirm
         //Volume valdiates movement against the trend. 
 
-        ICandleFeed _tradingStream, _trendStream;
-        ICandleLoad tradingLoad, trendLoad;
-        ILogger logger;
+        ICandleFeed _candleStream;
+        ICandleLoad _candleLoad;
+        ILogger _logger;
 
         EmaCandlestickIndicator _seven, _fourteen, _twentyEight;
         MacdCandlestickIndicator _macd;
@@ -42,19 +41,43 @@ namespace DataProcessing.Strategies
         public event EventHandler<MarketSignal> MarketSignalUpdated;
         public event EventHandler<string> CandlestickPatternFound;
 
-        private void InitializeComponents()
+        private void InitializeComponents(TradingPair pair, TradingPair pairAtTenXPeriod)
         {
-            _tradingStream.ReceivedCandlestickData += (sender, candle) => _tradingCandlesticks.Add(candle);
-            _trendStream.ReceivedCandlestickData += (sender, candle) => _trendingCandlesticks.Add(candle);
+            _candleStream.ReceivedCandlestickData += ReceivedCandlestickData;
 
+
+            _seven = new EmaCandlestickIndicator(pairAtTenXPeriod, 7);
             _seven.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _sevenUpdated);
-            _fourteen.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _fourteenUpdated);
-            _twentyEight.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _twentyEightUpdated);
-            _macd.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _macdUpdated);
-            _rsi.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _rsiUpdated);
-            _tradingStream.ReceivedCandlestickData += (sender, e) => MarkIndicatorUpdated(ref _candlesUpdated);
-            /*TODO, FINISH INDICATOR INIT*/
+            _seven.DataFeed = _candleStream;
+            _seven.DataLoad = _candleLoad;
 
+            _fourteen = new EmaCandlestickIndicator(pairAtTenXPeriod, 14);
+            _fourteen.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _fourteenUpdated);
+            _fourteen.DataFeed = _candleStream;
+            _fourteen.DataLoad = _candleLoad;
+
+            _twentyEight = new EmaCandlestickIndicator(pairAtTenXPeriod, 28);
+            _twentyEight.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _twentyEightUpdated);
+            _twentyEight.DataFeed = _candleStream;
+            _twentyEight.DataLoad = _candleLoad;
+
+            _macd = new MacdCandlestickIndicator(pair, 12, 24, 9);
+            _macd.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _macdUpdated);
+            _macd.DataFeed = _candleStream;
+            _macd.DataLoad = _candleLoad;
+
+            _rsi = new RsiCandlestickIndicator(pair, 12);
+            _rsi.IndicatorChanged += (sender, e) => MarkIndicatorUpdated(ref _rsiUpdated);
+            _rsi.DataFeed = _candleStream;
+            _rsi.DataLoad = _candleLoad;
+
+            _candleStream.ReceivedCandlestickData += (sender, e) => MarkIndicatorUpdated(ref _candlesUpdated);
+        }
+
+        private void ReceivedCandlestickData(object sender, Candlestick e)
+        {
+            if (e.TradingPair == _pair)
+                _tradingCandlesticks.Add(e);
         }
 
         private void MarkIndicatorUpdated(ref bool state)
